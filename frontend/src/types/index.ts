@@ -255,3 +255,59 @@ export interface UserOption {
   lastName: string
   email: string
 }
+
+export type ReorderPriority = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
+export type ReorderRule = 'CRITICAL_DEFICIT' | 'VELOCITY_RUNOUT' | 'ROP_BREACH' | 'HEALTHY'
+
+export interface RuleInputs {
+  currentStock: number
+  safetyStock: number
+  avgDailyDemand: number
+  leadTimeDays: number
+  reorderPoint: number
+  daysOfCover: number | null
+  reorderPointFormula: string
+  daysOfCoverFormula: string
+  recommendedQuantityFormula: string
+}
+
+export interface ReorderRecommendation {
+  productId: string
+  productName: string
+  sku: string
+  categoryId: string | null
+  categoryName: string
+  supplierId: string | null
+  supplierName: string
+  supplierEmail: string | null
+  unitPrice: number
+  currentStock: number
+  safetyStock: number
+  leadTimeDays: number
+  avgDailyDemand: number
+  daysOfCover: number | null
+  reorderPoint: number
+  recommendedQuantity: number
+  estimatedCost: number
+  priority: ReorderPriority
+  ruleApplied: ReorderRule
+  reason: string
+  ruleInputs: RuleInputs
+}
+
+export interface ReorderSummary {
+  totalEvaluated: number
+  totalFlagged: number
+  criticalCount: number
+  highCount: number
+  mediumCount: number
+  totalEstimatedRestockCost: number
+}
+
+export interface ReorderResponse {
+  lookbackDays: number
+  leadTimeDays: number
+  summary: ReorderSummary
+  recommendations: ReorderRecommendation[]
+}
+

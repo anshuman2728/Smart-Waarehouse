@@ -37,4 +37,17 @@ public interface StockMovementRepository
         long getMovementCount();
     }
 
+    @Query("""
+            SELECT m.product.id AS productId, COALESCE(SUM(m.quantity), 0) AS totalOutbound
+            FROM StockMovement m
+            WHERE m.type = 'OUTBOUND' AND m.createdAt >= :since
+            GROUP BY m.product.id
+            """)
+    List<ProductOutboundProjection> sumOutboundByProductSince(java.time.LocalDateTime since);
+
+    interface ProductOutboundProjection {
+        UUID getProductId();
+        long getTotalOutbound();
+    }
+
 }

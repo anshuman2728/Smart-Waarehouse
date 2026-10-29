@@ -17,6 +17,7 @@ const Users = lazy(() => import('../pages/Users'))
 const Activity = lazy(() => import('../pages/Activity'))
 const Settings = lazy(() => import('../pages/Settings'))
 const Reports = lazy(() => import('../pages/Reports'))
+const ReorderRecommendations = lazy(() => import('../pages/ReorderRecommendations'))
 
 export default function AppRoutes() {
   return (
@@ -32,6 +33,7 @@ export default function AppRoutes() {
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/movements" element={<Movements />} />
+            <Route path="/reorder" element={<ReorderRecommendations />} />
             <Route element={<AdminRoute />}>
               <Route path="/users" element={<Users />} />
               <Route path="/activity" element={<Activity />} />

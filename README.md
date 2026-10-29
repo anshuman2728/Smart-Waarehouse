@@ -138,6 +138,42 @@ npm run format        # Prettier
 
 On first startup, `DataInitializer` seeds the `ADMIN`, `MANAGER` and `EMPLOYEE` roles.
 
+### Demo Data Seeding (Local Development)
+
+To seed a realistic sample business with categories, suppliers, varied stock profiles (healthy, near-low, low, zero stock), stock movements, notifications, and demo users, enable `SEED_DEMO_DATA`:
+
+```bash
+# In PowerShell:
+$env:SEED_DEMO_DATA="true"; ./mvnw spring-boot:run
+
+# In Bash / Linux / macOS:
+SEED_DEMO_DATA=true ./mvnw spring-boot:run
+```
+
+> **Safety Notice:** Demo data seeding is idempotent (restarting does not duplicate records) and is strictly blocked under the `prod` profile (`@Profile("!prod")`). Existing database volumes and user data are never deleted or overwritten.
+
+#### Demo Credentials
+
+| Role | Email | Password | Access |
+| ---- | ----- | -------- | ------ |
+| **Admin** | `admin@smartwarehouse.com` | `Admin@123` | Full administrative control, users, settings, and audit logs |
+| **Manager** | `manager@smartwarehouse.com` | `Manager@123` | Inventory, stock movements, reorder recommendations, and reports |
+| **Employee** | `employee@smartwarehouse.com` | `Employee@123` | Day-to-day stock movement recording, alerts, and notifications |
+
+#### Seeded Sample Business ("Apex Central Logistics Hub")
+- **Categories:** Sensors & Vision Systems, Microcontrollers & SBCs, Motors & Motion Control, Industrial Cabling.
+- **Suppliers:** NovaTech Electronics, Apex Motion Systems, Global Wire & Cable Corp.
+- **Products & Stock Profiles:**
+  - `SBC-RPI4-8GB` (Raspberry Pi 4 8GB) — Stock: 120 (Healthy)
+  - `CBL-CAT6-50M` (Cat6 50m Cable) — Stock: 85 (Healthy)
+  - `PWR-DIN-24V10A` (24V 10A PSU) — Stock: 18 (Near-Low / Threshold)
+  - `MTR-NEMA23-28` (NEMA 23 Stepper Motor) — Stock: 6 (Low Stock Alert)
+  - `CAM-IND-5MP` (5MP Vision Camera) — Stock: 3 (Low Stock Alert)
+  - `SNS-US-IP67` (Ultrasonic Proximity Sensor) — Stock: 0 (Out of Stock Alert)
+  - `MCU-STM32-F4` (STM32F407 Board) — Stock: 14 (High Velocity Reorder Breach)
+- **Stock Movements & Audit Logs:** All initial product stocks are established via `MovementService.inbound()` and `MovementService.outbound()`, ensuring full mathematical before/after balance and audit log recording.
+- **Notifications:** Sample operational messages between Admin, Manager, and Employee.
+
 ## API Overview
 
 | Module | Endpoint | Access |
