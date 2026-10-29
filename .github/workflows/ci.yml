@@ -30,7 +30,7 @@ jobs:
         run: ./mvnw -B verify
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
           files: ./target/site/jacoco/jacoco.xml
           fail_ci_if_error: false
@@ -68,7 +68,7 @@ jobs:
         run: npm run build
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
