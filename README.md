@@ -1,16 +1,16 @@
 # Smart Warehouse — Inventory & Logistics Management Platform
 
-[![CI](https://github.com/mohamedsaadaoui/Smart-Warehouse/actions/workflows/ci.yml/badge.svg)](https://github.com/mohamedsaadaoui/Smart-Warehouse/actions/workflows/ci.yml)
+[![CI](https://github.com/anshuman2728/Smart-Waarehouse/actions/workflows/ci.yml/badge.svg)](https://github.com/anshuman2728/Smart-Waarehouse/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)](https://adoptium.net)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Docker](https://img.shields.io/badge/Docker-compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Material UI](https://img.shields.io/badge/MUI-6.0-007FFF?logo=mui&logoColor=white)](https://mui.com)
 [![TanStack Query](https://img.shields.io/badge/TanStack%20Query-5.59-FF4154?logo=reactquery&logoColor=white)](https://tanstack.com/query)
 
-Smart Warehouse is a full-stack warehouse and inventory management platform that replaces manual (spreadsheet) stock tracking with a real-time system: multi-warehouse stock movements, low-stock alerts, multi-supplier management, and an analytics dashboard — secured with JWT and role-based access control.
+Smart Warehouse is a full-stack warehouse and inventory management platform that replaces manual (spreadsheet) stock tracking with a real-time system: multi-supplier management, stock movements, predictive reorder recommendations, low-stock alerts, and an analytics dashboard — secured with JWT and role-based access control.
 
 ## Tech Stack
 
@@ -43,9 +43,10 @@ Smart Warehouse is a full-stack warehouse and inventory management platform that
 ## Features
 
 - **Authentication & Authorization** — register/login with JWT; roles `ADMIN`, `MANAGER`, `EMPLOYEE`
+- **Predictive Reorder Recommendations Engine** — demand velocity forecasting from outbound movements ($ADD$), Reorder Point ($ROP$), Days of Cover ($DoC$), priority classification (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`), explainable "Why Flagged?" formula inspector dialog, and CSV export
 - **Product & Category management** — CRUD, stock status, low-stock detection
-- **Multi-warehouse inventory** — stock entries, exits and inter-site movements with `MovementType`
-- **Suppliers** — multi-supplier management
+- **Stock Movement Tracking** — inbound, outbound, and inventory adjustments with before/after quantity validation
+- **Suppliers** — multi-supplier management and purchase order tracking
 - **Dashboard** — counts by status/category, low-stock list, recent movements, monthly stats
 - **Advanced Reports** — interactive charts (bar, line, pie), supplier performance, PDF export with jsPDF
 - **Notifications** — in-app notifications pushed in real time via WebSocket (including user-to-user)
@@ -53,6 +54,7 @@ Smart Warehouse is a full-stack warehouse and inventory management platform that
 - **User management** — admin-only user CRUD with role assignment
 - **Settings** — configurable application settings (ADMIN)
 - **Type-safe API layer** — Axios interceptors with JWT injection, Zod schema validation
+- **Opt-in Demo Data Seeding** — realistic sample business data ("Apex Central Logistics Hub") with idempotency and production guards
 
 ## Getting Started
 
@@ -68,15 +70,29 @@ Smart Warehouse is a full-stack warehouse and inventory management platform that
 docker compose up -d
 ```
 
-This starts PostgreSQL 17 with health checks and initialization scripts.
+This starts PostgreSQL 17 on mapped host port `5433` (container port `5432`) with health checks and initialization scripts.
 
 ### 2. Run the backend
 
 ```bash
-./mvnw spring-boot:run
+# In PowerShell:
+$env:SEED_DEMO_DATA="true"; .\mvnw.cmd spring-boot:run
+
+# In Bash / Linux / macOS:
+SEED_DEMO_DATA=true ./mvnw spring-boot:run
 ```
 
-The API starts on `http://localhost:8080` (Swagger UI: http://localhost:8080/swagger-ui.html).
+The API starts on `http://localhost:8081` (Swagger UI: `http://localhost:8081/swagger-ui.html`).
+
+### 3. Run the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend starts on `http://localhost:3000` (Vite) and proxies `/api` and `/ws` to the backend on `http://localhost:8081`.
 
 ### Full Stack with Docker Compose
 
@@ -95,9 +111,9 @@ docker compose down -v
 ```
 
 Services:
-- **PostgreSQL**: `localhost:5432`
-- **Backend API**: `localhost:8080`
-- **Frontend**: `localhost:5173`
+- **PostgreSQL**: `localhost:5433`
+- **Backend API**: `localhost:8081`
+- **Frontend**: `localhost:3000`
 
 Environment variables (create `.env` file):
 ```env
@@ -105,16 +121,6 @@ JWT_SECRET=your-super-secret-jwt-key-min-32-chars
 ADMIN_EMAIL=admin@yourdomain.com
 ADMIN_PASSWORD=SecurePassword123
 ```
-
-### 3. Run the frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-The frontend starts on `http://localhost:5173` (Vite) and proxies `/api` and `/ws` to the backend.
 
 ### Development Commands (Frontend)
 
@@ -179,6 +185,7 @@ SEED_DEMO_DATA=true ./mvnw spring-boot:run
 | Module | Endpoint | Access |
 | ------ | -------- | ------ |
 | Auth | `/api/auth/register`, `/api/auth/login` | Public |
+| Reorder Hub | `/api/reorder/recommendations`, `/api/reorder/export` | Authenticated |
 | Products | `/api/products/**` | Authenticated |
 | Categories | `/api/categories/**` | Authenticated |
 | Movements | `/api/movements/**` | Authenticated |
@@ -189,6 +196,13 @@ SEED_DEMO_DATA=true ./mvnw spring-boot:run
 | Settings | `/api/settings/**` | ADMIN |
 | Users | `/api/users/**` | ADMIN |
 | Audit logs | `/api/audit-logs/**` | ADMIN |
+
+## Reorder Recommendation Endpoints
+
+| Endpoint | Method | Description | Parameters |
+| -------- | ------ | ----------- | ---------- |
+| `/api/reorder/recommendations` | GET | Predictive replenishment calculations ($ADD$, $ROP$, $DoC$, priority, and rule breakdown) | `days` (default 30), `leadTimeDays` (default 7) |
+| `/api/reorder/export` | GET | Download reorder recommendations as a CSV spreadsheet | `days` (default 30), `leadTimeDays` (default 7) |
 
 ## Report Endpoints
 
@@ -207,10 +221,12 @@ All report endpoints support optional `startDate` and `endDate` query parameters
 com.saadaoui.smartwarehouse
 ├── auth          # JWT, security config, authentication, user service
 ├── category      # product categories
+├── config        # OpenAPI documentation & opt-in demo data seeder
 ├── dashboard     # summary statistics
-├── movement      # stock movements (in / out / transfer)
+├── movement      # stock movements (in / out / adjustment)
 ├── notification  # notifications + real-time WebSocket push
 ├── product       # products and stock status
+├── reorder       # predictive reorder recommendations engine & CSV export
 ├── report        # CSV + PDF reports with analytics
 ├── settings      # application settings
 ├── supplier      # suppliers
